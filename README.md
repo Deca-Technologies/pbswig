@@ -36,26 +36,26 @@ This will create and install a Python package with a module created from the pro
 1. Create a .proto specification in the package directory
 2. Create a setup.py file in the same directory as the package directory
 3. Edit the contents of setup.py to look like (adjusted for your project):
+```python
+import setuptools
 
-    import setuptools
-    
-    # needed to perform custom build steps
-    from pbswig.build import build_cmd, install_cmd
+# needed to perform custom build steps
+from pbswig.build import build_cmd, install_cmd
 
-    setuptools.setup(
-        cmdclass={'build': build_cmd, 'install': install_cmd},  # unique to PBSWIG
-        name='pbswig_example_model',
-        version='1.0',
-        description='Example of pbswig usage for data models',
-        author='Craig Bishop',
-        author_email='craig.bishop@decatechnologies.com',
-        packages=['pbswig_example_model'],
-        pbswig_protocols=[
-            'pbswig_example_model/example.proto'  # unique to PBSWIG
-            # list each proto file here
-        ]
-    )
-
+setuptools.setup(
+    cmdclass={'build': build_cmd, 'install': install_cmd},  # unique to PBSWIG
+    name='pbswig_example_model',
+    version='1.0',
+    description='Example of pbswig usage for data models',
+    author='Craig Bishop',
+    author_email='craig.bishop@decatechnologies.com',
+    packages=['pbswig_example_model'],
+    pbswig_protocols=[
+        'pbswig_example_model/example.proto'  # unique to PBSWIG
+        # list each proto file here
+    ]
+)
+```
 4. Run `python setup.py install`
 
 ### For the package with a C++ extension using the data model
@@ -64,54 +64,55 @@ This will create and install a package containing a C++ Python extension with a 
 1. Create the C++ extension and other Python modules in the package directory
 2. Create a setup.py file in the same directory as the package directory
 3. Edit the contents of setup.py to look like (adjusted for your project):
+```python
+import setuptools
+from distutils.core import Extension
 
-    import setuptools
-    from distutils.core import Extension
+import pbswig
+# needed to workaround odd distutils behavior with SWIG
+from pbswig.build import build_cmd, install_cmd
 
-    import pbswig
+# needed to get include directory for C++ ext
+import pbswig_example_model.example_pb
+
+ext = Extension(
+    'pbswig_example_pkg._pbswig_example_ext',  # must have underscore
+    # source needs to be in package directory
+    sources=['pbswig_example_pkg/pbswig_example_ext.cpp',
+             'pbswig_example_pkg/pbswig_example_ext.i'],
+    # grabs the include directory using a PBSWIG helper
+    include_dirs=[pbswig.get_include(pbswig_example_model.example_pb)],
+    swig_opts=['-c++'])
+
+setuptools.setup(
     # needed to workaround odd distutils behavior with SWIG
-    from pbswig.build import build_cmd, install_cmd
-
-    # needed to get include directory for C++ ext
-    import pbswig_example_model.example_pb
-
-    ext = Extension(
-        'pbswig_example_pkg._pbswig_example_ext',  # must have underscore
-        # source needs to be in package directory
-        sources=['pbswig_example_pkg/pbswig_example_ext.cpp',
-                 'pbswig_example_pkg/pbswig_example_ext.i'],
-        # grabs the include directory using a PBSWIG helper
-        include_dirs=[pbswig.get_include(pbswig_example_model.example_pb)],
-        swig_opts=['-c++'])
-
-    setuptools.setup(
-        # needed to workaround odd distutils behavior with SWIG
-        cmdclass={'build': build_cmd, 'install': install_cmd},
-        name='pbswig_example_pkg',
-        version='1.0',
-        description='Example of pbswig usage in a package with extensions',
-        author='Craig Bishop',
-        author_email='craig.bishop@decatechnologies.com',
-        packages=['pbswig_example_pkg'],
-        ext_modules=[ext])
-
+    cmdclass={'build': build_cmd, 'install': install_cmd},
+    name='pbswig_example_pkg',
+    version='1.0',
+    description='Example of pbswig usage in a package with extensions',
+    author='Craig Bishop',
+    author_email='craig.bishop@decatechnologies.com',
+    packages=['pbswig_example_pkg'],
+    ext_modules=[ext])
+```
 4. Run `python setup.py install`
 
 ### Using the packages together
 Contents of example.py:
+```python
+# import the protobuf model
+from pbswig_example_model import example_pb
 
-    # import the protobuf model
-    from pbswig_example_model import example_pb
-    
-    # import the extension package that uses it
-    import pbswig_example_pkg
+# import the extension package that uses it
+import pbswig_example_pkg
 
-    # create the model object in Python
-    say = example_pb.Say()
-    say.text = "Hello PBSWIG!"
-    
-    # seamlessly pass it to the C++ extension
-    pbswig_example_pkg.say_it(say)
+# create the model object in Python
+say = example_pb.Say()
+say.text = "Hello PBSWIG!"
+
+# seamlessly pass it to the C++ extension
+pbswig_example_pkg.say_it(say)
+```
 
 ## TODO (Help Wanted)
 - Make usage of distutils simpler and follow standards better
