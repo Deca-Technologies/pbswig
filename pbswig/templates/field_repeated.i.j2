@@ -1,0 +1,123 @@
+    {%- if field.type in [1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 15, 16, 17, 18] %}
+        {%- if field.type == 1 %}
+            {%- set cpp_type_name = "double" %}
+        {%- elif field.type == 2 %}
+            {%- set cpp_type_name = "float" %}
+        {%- elif field.type == 3 %}
+            {%- set cpp_type_name = "::google::protobuf::int64" %}
+        {%- elif field.type == 4 %}
+            {%- set cpp_type_name = "::google::protobuf::uint64" %}
+        {%- elif field.type == 5 %}
+            {%- set cpp_type_name = "::google::protobuf::int32" %}
+        {%- elif field.type == 6 %}
+            {%- set cpp_type_name = "::google::protobuf::fixed64" %}
+        {%- elif field.type == 7 %}
+            {%- set cpp_type_name = "::google::protobuf::fixed32" %}
+        {%- elif field.type == 8 %}
+            {%- set cpp_type_name = "bool" %}
+        {%- elif field.type == 9 %}
+            {%- set cpp_type_name = "const ::std::string&" %}
+        {%- elif field.type == 12 %}
+            {%- set cpp_type_name = "const ::std::string&" %}
+        {%- elif field.type == 13 %}
+            {%- set cpp_type_name = "::google::protobuf::uint32" %}
+        {%- elif field.type == 15 %}
+            {%- set cpp_type_name = "::google::protobuf::sfixed32" %}
+        {%- elif field.type == 16 %}
+            {%- set cpp_type_name = "::google::protobuf::sfixed64" %}
+        {%- elif field.type == 17 %}
+            {%- set cpp_type_name = "::google::protobuf::int32" %}
+        {%- elif field.type == 18 %}
+            {%- set cpp_type_name = "::google::protobuf::int64" %}
+        {%- endif %}
+        %rename(_{{ field.name }}_size) {{ field.name|lower }}_size() const;
+        inline int {{ field.name|lower }}_size() const;
+        %rename(_clear_{{ field.name }}) clear_{{ field.name|lower }}();
+        inline void clear_{{ field.name|lower }}();
+        %rename(_add_{{ field.name }}) add_{{ field.name|lower }}({{ cpp_type_name}} value);
+        inline void add_{{ field.name|lower }}({{ cpp_type_name }} value);
+        %rename(_pb_get_{{ field.name }}) {{ field.name|lower }}(int);
+        inline {{ cpp_type_name }} {{ field.name|lower}}(int index);
+        %rename(_pb_set_{{ field.name }}) set_{{ field.name|lower }}(int, {{ cpp_type_name }} value);
+        inline void set_{{ field.name|lower}}(int index, {{ cpp_type_name }} value);
+        %pythoncode {{ '%{' }}
+            def _get_{{ field.name }}(self):
+                return RepeatedBasicFieldWrapper(self._{{ field.name }}_size,
+                                                 self._pb_get_{{ field.name }},
+                                                 self._add_{{ field.name }},
+                                                 self._pb_set_{{ field.name }},
+                                                 self._clear_{{ field.name }})
+
+            def _set_{{ field.name }}(self, value):
+                raise NotImplementedError("Cannot set pbswig repeated field.")
+
+            __swig_getmethods__['{{ field.name }}'] = _get_{{ field.name }}
+            __swig_setmethods__['{{ field.name }}'] = _set_{{ field.name }}
+            {{ field.name }} = property(_get_{{ field.name }}, _set_{{ field.name }})
+        {{ '%}' }}
+    {%- elif field.type == 11 %}
+        {%- set pkg_part = '::' + proto_file.package + '::' %}
+        {%- set type_part = field.type_name.replace('.' + proto_file.package + '.', '').replace('.', '_') %}
+        {%- set cpp_type_name = "const " + pkg_part + type_part + "&" %}
+        {%- set cpp_type_name_ptr = pkg_part + type_part + "*" %}
+        %rename(_{{ field.name }}_size) {{ field.name|lower }}_size() const;
+        inline int {{ field.name|lower }}_size() const;
+        %rename(_clear_{{ field.name }}) clear_{{ field.name|lower }}();
+        inline void clear_{{ field.name|lower }}();
+        %rename(_add_{{ field.name }}) add_{{ field.name|lower }}();
+        inline {{ cpp_type_name_ptr }} add_{{ field.name|lower }}();
+        %rename(_pb_get_{{ field.name }}) {{ field.name|lower }}(int);
+        inline {{ cpp_type_name }} {{ field.name|lower}}(int index);
+        %pythoncode {{ '%{' }}
+            def _get_{{ field.name }}(self):
+                return RepeatedMessageFieldWrapper(self._{{ field.name }}_size,
+                                                   self._pb_get_{{ field.name }},
+                                                   self._add_{{ field.name }},
+                                                   self._clear_{{ field.name }})
+
+            def _set_{{ field.name }}(self, value):
+                raise NotImplementedError("Cannot set pbswig repeated field.")
+
+            __swig_getmethods__['{{ field.name }}'] = _get_{{ field.name }}
+            __swig_setmethods__['{{ field.name }}'] = _set_{{ field.name }}
+            {{ field.name }} = property(_get_{{ field.name }}, _set_{{ field.name }})
+        {{ '%}' }}
+    {%- elif field.type == 14 %}
+        {% set cpp_type_name = field.type_name.replace('.', '::') %}
+        %rename(_{{ field.name }}_size) {{ field.name|lower }}_size() const;
+        inline int {{ field.name|lower }}_size() const;
+        %rename(_clear_{{ field.name }}) clear_{{ field.name|lower }}();
+        inline void clear_{{ field.name|lower }}();
+        %typemap(in) {{ cpp_type_name }} {
+            $1 = static_cast< {{ cpp_type_name }} >(PyInt_AsLong($input));
+        }
+        %rename(_add_{{ field.name }}) add_{{ field.name|lower }}({{ cpp_type_name}} value);
+        inline void add_{{ field.name|lower }}({{ cpp_type_name }} value);
+        %typemap(out) {{ cpp_type_name }} {
+            $result = PyInt_FromLong(static_cast<int>($1));
+        }
+        %rename(_pb_get_{{ field.name }}) {{ field.name|lower }}(int);
+        inline {{ cpp_type_name }} {{ field.name|lower}}(int index);
+        %typemap(in) {{ cpp_type_name }} {
+            $1 = static_cast< {{ cpp_type_name }} >(PyInt_AsLong($input));
+        }
+        %rename(_pb_set_{{ field.name }}) set_{{ field.name|lower }}(int, {{ cpp_type_name }} value);
+        inline void set_{{ field.name|lower}}(int index, {{ cpp_type_name }} value);
+        %pythoncode {{ '%{' }}
+            def _get_{{ field.name }}(self):
+                return RepeatedBasicFieldWrapper(self._{{ field.name }}_size,
+                                                 self._pb_get_{{ field.name }},
+                                                 self._add_{{ field.name }},
+                                                 self._pb_set_{{ field.name }},
+                                                 self._clear_{{ field.name }})
+
+            def _set_{{ field.name }}(self, value):
+                raise NotImplementedError("Cannot set pbswig repeated field.")
+
+            __swig_getmethods__['{{ field.name }}'] = _get_{{ field.name }}
+            __swig_setmethods__['{{ field.name }}'] = _set_{{ field.name }}
+            {{ field.name }} = property(_get_{{ field.name }}, _set_{{ field.name }})
+        {{ '%}' }}
+    {%- else %}
+        #error unknown field type: {{ field.type }}
+    {%- endif %}

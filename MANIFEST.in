@@ -1,0 +1,6 @@
+include 'pbswig/templates/enum_type.i.j2'
+include 'pbswig/templates/field_repeated.i.j2'
+include 'pbswig/templates/field_single.i.j2'
+include 'pbswig/templates/message_type.i.j2'
+include 'pbswig/templates/message_type.i.j2'
+include 'pbswig/templates/package.i.j2'

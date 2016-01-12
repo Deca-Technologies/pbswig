@@ -1,0 +1,45 @@
+*.py[cod]
+__pycache__
+
+*.swp
+*.vs*
+*.tms*
+*.pyc
+*.ropeproject
+build
+debug
+release
+dist
+
+# C extensions
+*.so
+*_wrap.cpp
+*_wrap.cc
+
+# Packages
+*.egg
+*.egg-info
+debug
+dist
+build
+eggs
+parts
+release
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Weird OS files
+*.DS_Store

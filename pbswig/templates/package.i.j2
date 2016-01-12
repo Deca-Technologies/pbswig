@@ -1,0 +1,131 @@
+%include <std_string.i>
+%module {{ proto_file.package }}_pb
+%{
+#include "{{ proto_file.package }}.pb.h"
+#include <google/protobuf/text_format.h>
+%}
+
+{%- raw %}
+%typemap(in) ::google::protobuf::int64, ::google::protobuf::uint64,
+             ::google::protobuf::int32, ::google::protobuf::uint32 {
+    $1 = PyInt_AsLong($input);
+}
+%typemap(out) ::google::protobuf::int64, ::google::protobuf::uint64,
+             ::google::protobuf::int32, ::google::protobuf::uint32 {
+    $result = PyInt_FromLong($1);
+}
+
+namespace google {
+    namespace protobuf {
+        %nodefaultctor Message;
+        %rename(_Message) Message;
+        class Message {
+        };
+
+        namespace TextFormat {
+            %rename (_MergeFromTextFormat) ParseFromString(const ::std::string & input, Message * output);
+            static bool	ParseFromString(const ::std::string & input, Message * output);
+        }
+    }
+}
+
+%pythoncode %{
+class RepeatedBasicFieldWrapper:
+    def __init__(self, f_size, f_getitem, f_additem, f_setitem, f_clear):
+        self._f_size = f_size
+        self._f_getitem = f_getitem
+        self._f_additem = f_additem
+        self._f_setitem = f_setitem
+        self._f_clear = f_clear
+
+    def clear(self):
+        self._f_clear()
+
+    def append(self, value):
+        return self._f_additem(value)
+
+    def extend(self, items):
+        for item in items:
+            self.append(item)
+
+    def __len__(self):
+        return self._f_size()
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return [self[i] for i in xrange(*key.indices(len(self)))]
+        if isinstance(key, (int, long)):
+            if key < 0:
+                key += len(self)
+            if key >= len(self) or key < 0:
+                raise IndexError('list index out of range')
+            return self._f_getitem(key)
+        else:
+            raise TypeError('list indices must be integers, not str')
+
+    def __setitem__(self, key, value):
+        if isinstance(key, slice):
+            return [self[i] for i in xrange(*key.indices(len(self)))]
+        if isinstance(key, (int, long)):
+            if key < 0:
+                key += len(self)
+            if key >= len(self) or key < 0:
+                raise IndexError('list index out of range')
+            return self._f_setitem(key, value)
+        else:
+            raise TypeError('list indices must be integers, not str')
+
+    def __repr__(self):
+        return list(self).__repr__()
+
+
+class RepeatedMessageFieldWrapper:
+    def __init__(self, f_size, f_getitem, f_additem, f_clear):
+        self._f_size = f_size
+        self._f_getitem = f_getitem
+        self._f_additem = f_additem
+        self._f_clear = f_clear
+
+    def clear(self):
+        self._f_clear()
+
+    def add(self):
+        return self._f_additem()
+
+    def extend(self, items):
+        for item in items:
+            self.append(item)
+
+    def __len__(self):
+        return self._f_size()
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return [self[i] for i in xrange(*key.indices(len(self)))]
+        if isinstance(key, (int, long)):
+            if key < 0:
+                key += len(self)
+            if key >= len(self) or key < 0:
+                raise IndexError('list index out of range')
+            return self._f_getitem(key)
+        else:
+            raise TypeError('list indices must be integers, not str')
+
+    def __setitem__(self, key, value):
+        raise NotImplementedError("Cannot set pbswig repeated field item.")
+
+    def __repr__(self):
+        return list(self).__repr__()
+%}
+{% endraw %}
+
+
+namespace {{ proto_file.package }} {
+    {%- for enum_type in proto_file.enum_type %}
+{% include "enum_type.i.j2" %}
+    {%- endfor %}
+    {%- for message_type in proto_file.message_type %}
+{%- set prefix = "" %}
+{% include "message_type.i.j2" %}
+    {%- endfor %}
+}

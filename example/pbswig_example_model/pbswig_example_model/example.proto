@@ -1,0 +1,6 @@
+package example;
+
+message Say
+{
+    required string text = 1;
+}

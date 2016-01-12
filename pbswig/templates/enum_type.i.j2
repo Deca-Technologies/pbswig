@@ -1,0 +1,7 @@
+    %pythoncode {{ '%{' }}
+        class {{ enum_type.name }}:
+        {%- for enum_value in enum_type.value %}
+            {{ enum_value.name }} = {{ enum_value.number }}
+        {%- endfor %}
+    {{ '%}' }}
+

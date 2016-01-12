@@ -1,0 +1,46 @@
+#!/usr/local/bin/python
+
+import sys
+import os.path
+import pkg_resources
+
+import pbswig
+
+from jinja2 import Environment, FileSystemLoader, PackageLoader
+from google.protobuf.compiler import plugin_pb2 as plugin
+
+
+def generate_proto_file(proto_file):
+    if pkg_resources.resource_exists('pbswig', 'templates/package.i.j2'):
+        tplt_env = Environment(loader=PackageLoader('pbswig', 'templates'))
+    else:
+        tplt_dir = os.path.join(pbswig.__path__[0], 'templates')
+        tplt_env = Environment(loader=FileSystemLoader(tplt_dir))
+    tplt = tplt_env.get_template('package.i.j2')
+    return tplt.render(proto_file=proto_file)
+
+
+def generate(request):
+    response = plugin.CodeGeneratorResponse()
+    for proto_file in request.proto_file:
+        output_file = response.file.add()
+        output_file.name = "{}.pb.i".format(proto_file.package)
+        output_file.content = generate_proto_file(proto_file)
+    return response
+
+
+def main():
+    # Read code generation request
+    data = sys.stdin.read()
+    request = plugin.CodeGeneratorRequest()
+    request.ParseFromString(data)
+
+    # Generate code
+    response = generate(request)
+
+    # Write response
+    data = response.SerializeToString()
+    sys.stdout.write(data)
+
+if __name__ == '__main__':
+    main()

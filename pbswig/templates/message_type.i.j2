@@ -1,0 +1,60 @@
+{%- set parent_type = message_type %}
+{%- for message_type in message_type.nested_type %}
+{%- set prefix = parent_type.name + "_" %}
+{% include "message_type.i.j2" %}
+{%- endfor %}
+    
+    {%- if prefix != "" %}
+    %rename (_{{ prefix + message_type.name }}) {{ prefix + message_type.name }};
+    {%- endif %}
+    class {{ prefix + message_type.name }} : public ::google::protobuf::Message {
+    public:
+        {{ prefix + message_type.name }}();
+        virtual ~{{ prefix + message_type.name }}();
+
+        void CopyFrom(const {{ prefix + message_type.name }}& from);
+        void MergeFrom(const {{ prefix + message_type.name }}& from);
+        void Clear();
+        bool IsInitialized() const;
+        %rename(SerializeToString) SerializeAsString() const;
+        ::std::string SerializeAsString() const;
+        %rename(SerializePartialToString) SerializePartialAsString() const;
+        ::std::string SerializePartialAsString() const;
+        bool ParseFromString(const ::std::string& data);
+        bool ParsePartialFromString(const ::std::string& data);
+        {%- for field in message_type.field %}
+            {%- if field.label == 1 %}
+{% include "field_single.i.j2" %}
+            {%- elif field.label == 2 %}
+{% include "field_single.i.j2" %}
+            {%- elif field.label == 3 %}
+{% include "field_repeated.i.j2" %}
+            {%- endif %}
+        {%- endfor %}
+
+        %pythoncode {{ '%{' }}
+            {%- for nested_type in message_type.nested_type %}
+            {%- set prefix = parent_type.name + "_" %}
+            {{ nested_type.name }} = _{{ prefix + nested_type.name }}
+            {%- endfor %}
+
+            def MergeFromTextFormat(self, input):
+                _MergeFromTextFormat(input, self)
+
+            def HasField(self, field_name):
+                attr_name = '_has_' + field_name
+                if hasattr(self, attr_name):
+                    return getattr(self, attr_name)()
+                else:
+                    raise ValueError
+
+            def ClearField(self, field_name):
+                attr_name = '_clear_' + field_name
+                if hasattr(self, attr_name):
+                    return getattr(self, attr_name)()
+                else:
+                    raise ValueError
+
+        {{ '%}' }}
+    };
+
