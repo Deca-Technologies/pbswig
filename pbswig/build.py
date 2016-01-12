@@ -169,7 +169,6 @@ class build_cmd(_build):
         register_exts(
             self.distribution,
             self.build_temp)
-        self.run_command('build_py')
         self.run_command('build_pbswig')
         self.run_command('build_ext')
         self.run_command('build_py')
