@@ -1,5 +1,5 @@
 # PBSWIG
-A Python wrapper generator for C++ Google Protocol Buffer specifications allowing seemless interop to python extensions.
+A Python wrapper generator for C++ Google Protocol Buffer specifications allowing seamless interop to python extensions.
 
 ## Introduction
 Creating the data model for an application is always hard, especially if the application is split across a language barrier like Python-C++. Google Protocol Buffers provides an awesome way to specify a data schema and generate code in dozens of languages to handle it. However, it does not handle passing data across language barriers very well. The Python generated code creates Python representations when a protobuf is parsed, and the C++ code uses C++ class representations. Passing a Python object representation to a C++ extension function requires data translation or other complexity. PBSWIG makes this use case easy: it generates the C++ class hierarchy, and then wraps it for Python using SWIG. This way, when a protobuf object is passed to C++, only a pointer is passed and no translation is necessary.
