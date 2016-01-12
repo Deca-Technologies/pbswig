@@ -6,6 +6,9 @@ Creating the data model for an application is always hard, especially if the app
 
 The project consists of two main parts: a protobuf compiler plugin and some distutils extensions for building data model packages using it.
 
+## License
+MIT License; See LICENSE file.
+
 ## Requirements
 - Google Protocol Buffers library for C++ with compiler and headers
     - On Mac OS: `brew install protobuf`
